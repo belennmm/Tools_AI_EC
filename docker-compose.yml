@@ -1,0 +1,53 @@
+
+services:
+  # PostgreSQL con pgvector - Base de datos
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: parachute_postgres
+    environment:
+      POSTGRES_USER: parachute_user
+      POSTGRES_PASSWORD: parachute_secure_password
+      POSTGRES_DB: parachute_rag
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U parachute_user -d parachute_rag"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - parachute_network
+
+  # Python App - Contenedor para ejecutar scripts Python
+  app:
+    build: .
+    container_name: parachute_app
+    working_dir: /app
+    environment:
+      # PostgreSQL - dentro de Docker usa el nombre del servicio como host
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: parachute_rag
+      DB_USER: parachute_user
+      DB_PASSWORD: parachute_secure_password
+    volumes:
+      # Monta la carpeta actual para acceso a scripts y corpus
+      - .:/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - parachute_network
+    # Permite input interactivo
+    stdin_open: true
+    tty: true
+
+volumes:
+  postgres_data:
+
+networks:
+  parachute_network:
+    driver: bridge

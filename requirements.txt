@@ -1,0 +1,13 @@
+# SDK y utilidades actuales
+openai==3.5.0
+python-dotenv==1.2.3
+colorama==0.4.6
+
+# PostgreSQL
+psycopg2-binary==2.9.9
+
+# Embeddings locales
+sentence-transformers==3.0.1
+
+# Procesamiento numérico
+numpy==1.24.3
