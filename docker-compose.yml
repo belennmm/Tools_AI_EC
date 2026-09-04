@@ -1,6 +1,6 @@
 
 services:
-  # PostgreSQL con pgvector - Base de datos
+  
   postgres:
     image: pgvector/pgvector:pg16
     container_name: parachute_postgres
@@ -21,27 +21,27 @@ services:
     networks:
       - parachute_network
 
-  # Python App - Contenedor para ejecutar scripts Python
+  
   app:
     build: .
     container_name: parachute_app
     working_dir: /app
     environment:
-      # PostgreSQL - dentro de Docker usa el nombre del servicio como host
+     
       DB_HOST: postgres
       DB_PORT: 5432
       DB_NAME: parachute_rag
       DB_USER: parachute_user
       DB_PASSWORD: parachute_secure_password
     volumes:
-      # Monta la carpeta actual para acceso a scripts y corpus
+      
       - .:/app
     depends_on:
       postgres:
         condition: service_healthy
     networks:
       - parachute_network
-    # Permite input interactivo
+   
     stdin_open: true
     tty: true
 

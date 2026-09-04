@@ -1,10 +1,8 @@
 """
-Script para verificar la conexión a PostgreSQL y que pgvector esté habilitado.
+verificar la conexión a PostgreSQL y que pgvector esté habilitado.
 
-Este script verifica:
-1. Conexión exitosa a la base de datos
-2. PostgreSQL responde correctamente
-3. La extensión 'vector' está instalada y habilitada
+
+Conexión exitosa a la base de datos y respuesta de postgreSQL.
 """
 
 import os
@@ -23,7 +21,7 @@ except ImportError:
 
 init(autoreset=True)
 
-# Cargar variables de entorno
+
 load_dotenv()
 
 DB_HOST = os.getenv("DB_HOST", "localhost")
@@ -52,13 +50,13 @@ def check_connection():
 
         cursor = connection.cursor()
 
-        # Verificar que PostgreSQL responde
+      
         cursor.execute("SELECT version();")
         version = cursor.fetchone()[0]
         print(f"{Fore.GREEN}✓ PostgreSQL responde:{Fore.RESET}")
         print(f"  {version}\n")
 
-        # Verificar que pgvector está habilitado
+       
         cursor.execute(
             "SELECT 1 FROM pg_extension WHERE extname = 'vector';"
         )
@@ -71,7 +69,7 @@ def check_connection():
             print("  Intenta crear la extensión con:")
             print("  CREATE EXTENSION IF NOT EXISTS vector;\n")
 
-        # Verificar tablas creadas
+    
         cursor.execute(
             """
             SELECT table_name FROM information_schema.tables

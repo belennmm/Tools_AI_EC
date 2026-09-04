@@ -1,10 +1,9 @@
 """
-Script para probar búsqueda vectorial en PostgreSQL + pgvector.
+Script para probar búsqueda vectorial en PostgreSQL + pgvector
 
-IMPORTANTE: Devuelve TOP 3 resultados SIN threshold de similitud.
-Esto permite diagnosticar y ver scores reales de todas las consultas.
+ da los TOP 3 resultados SIN threshold de similitud
 
-Flujo:
+
 1. Carga modelo: sentence-transformers/all-MiniLM-L6-v2
 2. Genera embedding de la pregunta (384 dimensiones)
 3. Consulta PostgreSQL con búsqueda EXACTA (sin índice ANN)
@@ -24,7 +23,7 @@ from sentence_transformers import SentenceTransformer
 
 init(autoreset=True)
 
-# Cargar variables de entorno
+
 load_dotenv()
 
 DB_HOST = os.getenv("DB_HOST", "localhost")
@@ -33,7 +32,7 @@ DB_NAME = os.getenv("DB_NAME", "parachute_rag")
 DB_USER = os.getenv("DB_USER", "parachute_user")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 
-MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
+MODEL_NAME = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
 TOP_K = 3
 
 
@@ -79,13 +78,10 @@ def search_faqs(connection, query_embedding, top_k=TOP_K):
     """
     cursor = connection.cursor()
     
-    # Convertir embedding a formato JSON para pgvector
+    #  embedding a formato JSON para pgvector
     embedding_json = json.dumps(query_embedding)
     
-    # Consulta SQL:
-    # - Operador <=> calcula distancia coseno (rango 0-2)
-    # - (1 - distancia) convierte a score de 0-1
-    # - ORDER BY distancia ASC (menor distancia = más similar)
+    # Consulta SQL
     # - LIMIT TOP_K (devuelve 3 resultados siempre, sin threshold)
     query = """
     SELECT 
@@ -120,7 +116,7 @@ def display_results(question, results, query_number):
         return
     
     for i, (faq_id, categoria, pregunta, respuesta, score) in enumerate(results, 1):
-        # Color según similitud
+       
         if score >= 0.7:
             score_color = Fore.GREEN
             score_marker = "✓ ALTA"
@@ -146,22 +142,22 @@ def main():
     print(f"{Fore.CYAN}=== PRUEBA DE BÚSQUEDA VECTORIAL (Sin Índice ANN) ==={Fore.RESET}")
     print(f"{Fore.CYAN}{'='*70}{Fore.RESET}\n")
     
-    # Cargar modelo
+    
     print(f"{Fore.CYAN}Cargando modelo: {MODEL_NAME}...{Fore.RESET}")
     model = load_model()
     print(f"{Fore.GREEN}✓ Modelo cargado (dimensión: 384){Fore.RESET}\n")
     
-    # Conectar a base de datos
+    # a base de datos
     print(f"{Fore.CYAN}Conectando a PostgreSQL...{Fore.RESET}")
     connection = connect_database()
     print(f"{Fore.GREEN}✓ Conexión establecida{Fore.RESET}\n")
     
-    # Verificar que hay datos
+    # hay datos
     cursor = connection.cursor()
     cursor.execute("SELECT COUNT(*) FROM faqs;")
     count = cursor.fetchone()[0]
     
-    # Verificar si existe índice IVFFLAT
+    #si existe índice IVFFLAT
     cursor.execute("""
         SELECT indexname FROM pg_indexes 
         WHERE tablename = 'faqs' AND indexname LIKE '%embedding%';
@@ -182,7 +178,7 @@ def main():
         print(f"{Fore.GREEN}✓ Sin índices ANN (búsqueda exacta){Fore.RESET}")
     print()
     
-    # Ejemplos de prueba
+    #  prueba
     test_queries = [
         ("¿Cuál es el peso máximo permitido para saltar?", "EXACTA - Sobre peso"),
         ("¿Cómo puedo llegar al evento desde Guatemala?", "EXACTA - Sobre logística"),
@@ -196,13 +192,13 @@ def main():
     for query_num, (question, desc) in enumerate(test_queries, 1):
         print(f"{Fore.CYAN}[{query_num}/{len(test_queries)}] {desc}{Fore.RESET}")
         
-        # Generar embedding de la pregunta
+        # embedding de la pregunta
         question_embedding = model.encode(question).tolist()
         
-        # Buscar FAQs similares (TOP 3 sin threshold)
+        # FAQs similares (TOP 3 sin threshold)
         results = search_faqs(connection, question_embedding, top_k=TOP_K)
         
-        # Mostrar resultados
+        #  resultados
         display_results(question, results, query_num)
     
     connection.close()
@@ -212,5 +208,4 @@ def main():
     print(f"{Fore.CYAN}{'='*70}{Fore.RESET}\n")
 
 
-if __name__ == "__main__":
-    main()
+if __name__ == "__main__": main()

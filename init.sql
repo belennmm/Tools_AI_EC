@@ -1,7 +1,6 @@
--- Crear extensión de vectores
 CREATE EXTENSION IF NOT EXISTS vector;
 
--- Crear tabla para embeddings
+
 CREATE TABLE IF NOT EXISTS faqs (
     id SERIAL PRIMARY KEY,
     faq_id VARCHAR(50) UNIQUE NOT NULL,
@@ -12,13 +11,12 @@ CREATE TABLE IF NOT EXISTS faqs (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- NOTA: Para 120 registros, búsqueda exacta es mejor que índice ANN.
--- pgvector hace full-scan con operador <=> en ~1ms para 120 registros.
--- IVFFLAT con lists=100 es DEMASIADO agresivo para este dataset pequeño.
--- Se omite índice intencionalmente. Si el dataset crece > 100k, agregar:
---   CREATE INDEX idx_faq_embedding ON faqs USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100);
+-- para 120 registros, búsqueda exacta es mejor que índice ANN.
+-- y evita la pérdida de recall de un índice ANN mal ajustado.
 
--- Crear tabla para historial de conversaciones 
+-- si el dataset crece > 100k, agregar:
+
+
 CREATE TABLE IF NOT EXISTS conversation_history (
     id SERIAL PRIMARY KEY,
     user_message TEXT NOT NULL,
