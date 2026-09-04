@@ -8,7 +8,7 @@ Si la información solicitada no aparece en la base de conocimientos, el agente 
 
 ## VIDEO
 
-Video demostrativo: [https://youtu.be/F_v7aJ-50D0](https://youtu.be/F_v7aJ-50D0)
+Video demostrativo: [https://youtu.be/rssbYygBpdY](https://youtu.be/rssbYygBpdY)
 
 ## Tecnologías
 
